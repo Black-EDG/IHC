@@ -1,14 +1,14 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
 
-# 1. Lo que envía el usuario desde la pantalla de Login
 class LoginRequest(BaseModel):
     correo: EmailStr
     contrasena: str
 
-# 2. Lo que responde la API si el Login es correcto
+class PadreLoginRequest(BaseModel):
+    dni: str = Field(..., min_length=8, max_length=8, pattern=r'^\d{8}$')
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    rol: str  # Enviamos el rol para que el frontend sepa qué pantallas mostrar (Admin, Docente, Auxiliar)
+    rol: str
     nombres: str
