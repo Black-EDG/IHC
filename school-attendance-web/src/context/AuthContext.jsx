@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -6,44 +6,55 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token) {
-      try {
-        // Decodificar payload del JWT (sin verificar firma, solo para extraer datos)
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(window.atob(base64));
-        setUser({ id: payload.usuario_id, rol: payload.rol, correo: payload.sub });
-      } catch (error) {
-        console.error('Token inválido', error);
-        logout();
-      }
+    if (token && user) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
-    setLoading(false);
-  }, [token]);
+  }, [token, user]);
 
-  const login = (token, userData) => {
-    localStorage.setItem('token', token);
-    setToken(token);
-    setUser({ id: userData.id, rol: userData.rol, correo: userData.correo });
-    navigate('/admin');
+  const login = (access_token, userData) => {
+    setToken(access_token);
+    setUser(userData);
+    // Redirigir según el rol
+    switch (userData.rol) {
+      case 'admin':
+        navigate('/admin/dashboard');
+        break;
+      case 'docente':
+        navigate('/docente/dashboard');
+        break;
+      case 'auxiliar':
+        navigate('/auxiliar/dashboard');
+        break;
+      default:
+        navigate('/');
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    navigate('/');
+    navigate('/login');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    token,
+    user,
+    login,
+    logout,
+    isAuthenticated: !!token,
+    isAdmin: user?.rol === 'admin',
+    isDocente: user?.rol === 'docente',
+    isAuxiliar: user?.rol === 'auxiliar',
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
