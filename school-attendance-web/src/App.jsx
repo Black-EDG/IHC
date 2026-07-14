@@ -17,9 +17,10 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Ruta pública del Login */}
         <Route path="/" element={<Login />} />
 
-        {/* Panel de Administración con layout compartido */}
+        {/* Panel de Administración con layout compartido y protección de rol */}
         <Route
           path="/admin"
           element={
@@ -28,7 +29,12 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardAdmin />} />
+          {/* Si entran exactamente a "/admin", los redirige automáticamente a "/admin/dashboard" */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+
+          {/* Esta ruta procesará el path "/admin/dashboard" que envía tu AuthContext */}
+          <Route path="dashboard" element={<DashboardAdmin />} />
+          
           <Route path="alumnos" element={<MatriculaAlumno />} />
           <Route path="apoderados" element={<MatriculaApoderado />} />
           <Route path="usuarios" element={<GestionUsuarios />} />

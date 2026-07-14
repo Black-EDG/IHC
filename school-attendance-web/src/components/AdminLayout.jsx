@@ -2,52 +2,58 @@ import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// Iconos SVG inline sencillos para cada enlace
+// ICONOS BLINDADOS: Tienen tamaño exacto e inmutable en línea (20px x 20px)
 const HomeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
   </svg>
 );
 
 const AcademicIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
   </svg>
 );
 
 const UserGroupIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
   </svg>
 );
 
 const UsersIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
   </svg>
 );
 
 const BuildingIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
   </svg>
 );
 
 const BellIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
   </svg>
 );
 
 const LogoutIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h5a1 1 0 001-1V3a1 1 0 00-1-1H3zm10.293 3.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L14.586 11H7a1 1 0 110-2h7.586l-1.293-1.293a1 1 0 010-1.414z" clipRule="evenodd" />
   </svg>
 );
 
 const BarsIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+  <svg style={{ width: '24px', height: '24px', minWidth: '24px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg style={{ width: '24px', height: '24px', minWidth: '24px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
   </svg>
 );
 
@@ -65,89 +71,274 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar para escritorio */}
-      <aside className="hidden md:flex md:flex-col w-64 bg-white shadow-lg fixed h-full z-10">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold text-blue-600">Admin Panel</h2>
-          <p className="text-sm text-gray-500 mt-1">{user?.correo}</p>
+    <div className="admin-layout-root">
+      {/* CSS Inyectado para control total e inmune a Tailwind */}
+      <style>{`
+        .admin-layout-root {
+          display: flex;
+          min-height: 100vh;
+          background-color: #f8fafc !important;
+          font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        /* Asegurar absolutamente que ningún SVG en el Layout crezca de más */
+        .admin-layout-root svg {
+          display: inline-block !important;
+          vertical-align: middle !important;
+          flex-shrink: 0 !important;
+        }
+
+        /* Sidebar Escritorio */
+        .layout-sidebar {
+          width: 260px !important;
+          background-color: #ffffff !important;
+          border-right: 1px solid #e2e8f0 !important;
+          position: fixed !important;
+          height: 100vh !important;
+          left: 0 !important;
+          top: 0 !important;
+          z-index: 50 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          box-shadow: 4px 0 24px rgba(15, 23, 42, 0.015) !important;
+        }
+
+        .sidebar-brand-box {
+          padding: 24px !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+        }
+
+        .brand-title {
+          font-size: 20px !important;
+          font-weight: 800 !important;
+          color: #4f46e5 !important;
+          margin: 0 !important;
+          letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+          font-size: 12px !important;
+          color: #64748b !important;
+          margin: 4px 0 0 0 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .sidebar-nav {
+          flex: 1 !important;
+          padding: 20px 16px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 6px !important;
+          overflow-y: auto !important;
+        }
+
+        /* Enlaces de navegación */
+        .nav-item-link {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 12px 16px !important;
+          color: #64748b !important;
+          text-decoration: none !important;
+          font-size: 14px !important;
+          font-weight: 600 !important;
+          border-radius: 12px !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .nav-item-link:hover {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+
+        .nav-item-link.active {
+          background-color: #eef2ff !important;
+          color: #4f46e5 !important;
+        }
+
+        .sidebar-footer {
+          padding: 16px !important;
+          border-top: 1px solid #f1f5f9 !important;
+        }
+
+        .btn-logout {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          width: 100% !important;
+          padding: 12px 16px !important;
+          background: none !important;
+          border: none !important;
+          color: #ef4444 !important;
+          font-size: 14px !important;
+          font-weight: 600 !important;
+          text-align: left !important;
+          cursor: pointer !important;
+          border-radius: 12px !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .btn-logout:hover {
+          background-color: #fef2f2 !important;
+        }
+
+        /* Contenido Principal */
+        .layout-main-area {
+          flex-1: 1 1 0% !important;
+          margin-left: 260px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          min-width: 0 !important;
+        }
+
+        /* Cabecera Móvil */
+        .mobile-header {
+          display: none !important;
+          background-color: #ffffff !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+          padding: 16px 20px !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 40 !important;
+        }
+
+        .btn-menu-toggle {
+          background: none !important;
+          border: none !important;
+          color: #334155 !important;
+          cursor: pointer !important;
+          padding: 4px !important;
+          display: flex !important;
+          align-items: center !important;
+        }
+
+        .mobile-brand-title {
+          font-size: 18px !important;
+          font-weight: 800 !important;
+          color: #4f46e5 !important;
+          margin: 0 !important;
+        }
+
+        /* Menú Lateral Móvil con Overlay */
+        .mobile-overlay {
+          position: fixed !important;
+          inset: 0 !important;
+          background-color: rgba(15, 23, 42, 0.4) !important;
+          backdrop-filter: blur(4px) !important;
+          z-index: 100 !important;
+          display: flex !important;
+        }
+
+        .mobile-sidebar {
+          width: 280px !important;
+          background-color: #ffffff !important;
+          height: 100% !important;
+          padding: 24px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          box-shadow: 4px 0 24px rgba(0,0,0,0.1) !important;
+        }
+
+        .btn-close-menu {
+          background: none !important;
+          border: none !important;
+          color: #64748b !important;
+          cursor: pointer !important;
+          padding: 4px !important;
+          align-self: flex-end !important;
+          margin-bottom: 24px !important;
+          display: flex !important;
+        }
+
+        /* Media Queries Responsivas */
+        @media (max-width: 768px) {
+          .layout-sidebar {
+            display: none !important;
+          }
+          .layout-main-area {
+            margin-left: 0 !important;
+          }
+          .mobile-header {
+            display: flex !important;
+          }
+        }
+      `}</style>
+
+      {/* 1. SIDEBAR ESCRITORIO */}
+      <aside className="layout-sidebar">
+        <div className="sidebar-brand-box">
+          <h2 className="brand-title">Admin Panel</h2>
+          <p className="brand-subtitle">{user?.correo || 'admin@colegio.edu'}</p>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="sidebar-nav">
           {navigation.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === '/admin'}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                }`
-              }
+              className={({ isActive }) => `nav-item-link ${isActive ? 'active' : ''}`}
             >
               <item.icon />
-              {item.name}
+              <span>{item.name}</span>
             </NavLink>
           ))}
         </nav>
-        <div className="p-4 border-t">
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium"
-          >
+        <div className="sidebar-footer">
+          <button onClick={logout} className="btn-logout">
             <LogoutIcon />
-            Cerrar sesión
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
 
-      {/* Sidebar móvil (overlay) */}
+      {/* 2. SIDEBAR MÓVIL (OVERLAY) */}
       {sidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-20 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)}>
-          <aside className="w-64 bg-white h-full p-6" onClick={(e) => e.stopPropagation()}>
-            <button className="mb-6" onClick={() => setSidebarOpen(false)}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+        <div className="mobile-overlay" onClick={() => setSidebarOpen(false)}>
+          <aside className="mobile-sidebar" onClick={(e) => e.stopPropagation()}>
+            <button className="btn-close-menu" onClick={() => setSidebarOpen(false)}>
+              <CloseIcon />
             </button>
-            <nav className="space-y-1">
+            <nav className="sidebar-nav" style={{ padding: 0 }}>
               {navigation.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   end={item.to === '/admin'}
                   onClick={() => setSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium ${
-                      isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                    }`
-                  }
+                  className={({ isActive }) => `nav-item-link ${isActive ? 'active' : ''}`}
                 >
                   <item.icon />
-                  {item.name}
+                  <span>{item.name}</span>
                 </NavLink>
               ))}
-              <button
-                onClick={logout}
-                className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium"
-              >
-                <LogoutIcon />
-                Cerrar sesión
-              </button>
+              <div style={{ borderTop: '1px solid #f1f5f9', marginTop: '16px', paddingTop: '16px' }}>
+                <button onClick={logout} className="btn-logout">
+                  <LogoutIcon />
+                  <span>Cerrar sesión</span>
+                </button>
+              </div>
             </nav>
           </aside>
         </div>
       )}
 
-      {/* Contenido principal */}
-      <div className="flex-1 md:ml-64">
-        <header className="md:hidden bg-white shadow-sm p-4 flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)}>
+      {/* 3. AREA DE CONTENIDO PRINCIPAL */}
+      <div className="layout-main-area">
+        {/* Header para móviles */}
+        <header className="mobile-header">
+          <button className="btn-menu-toggle" onClick={() => setSidebarOpen(true)}>
             <BarsIcon />
           </button>
-          <h1 className="text-lg font-bold text-blue-600">Admin</h1>
-          <div className="w-6" />
+          <h1 className="mobile-brand-title">Admin</h1>
+          <div style={{ width: '24px' }} /> {/* Espacio para balancear el título */}
         </header>
-        <main className="p-6">
+
+        {/* Vistas Hijas (como el DashboardAdmin) */}
+        <main style={{ padding: '24px', boxSizing: 'border-box' }}>
           <Outlet />
         </main>
       </div>
