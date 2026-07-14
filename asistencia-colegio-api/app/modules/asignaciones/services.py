@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
 from sqlalchemy import and_, or_
 from fastapi import HTTPException, status
 from typing import List, Optional
@@ -17,66 +16,93 @@ from app.modules.aulas.models import Aula
 from app.modules.cursos.models import Curso
 
 # ═══════════════════════════════════════════════════════════════
-# OPERACIONES DE BÚSQUEDA
+# OPERACIONES DE BÚSQUEDA (SIN selectinload)
 # ═══════════════════════════════════════════════════════════════
 
-async def obtener_asignacion_por_id(db: AsyncSession, asignacion_id: int) -> Optional[AsignacionAula]:
-    """Busca una asignación por ID con todas las relaciones"""
+async def _enriquecer_asignacion(db: AsyncSession, asignacion: AsignacionAula) -> dict:
+    """Convierte una asignación en diccionario con datos de relaciones"""
+    usuario = await db.get(Usuario, asignacion.usuario_id)
+    aula = await db.get(Aula, asignacion.aula_id)
+    curso = await db.get(Curso, asignacion.curso_id) if asignacion.curso_id else None
+    
+    tipo_legible = {
+        'docente_curso': 'Docente de Curso',
+        'tutor_seccion': 'Tutor de Sección',
+        'auxiliar_grado': 'Auxiliar de Grado'
+    }
+    
+    return {
+        "id": asignacion.id,
+        "usuario_id": asignacion.usuario_id,
+        "usuario_nombre": usuario.nombre_completo if usuario else "Desconocido",
+        "usuario_dni": usuario.dni if usuario else None,
+        "aula_id": asignacion.aula_id,
+        "aula_nombre": aula.nombre_corto if aula else f"Aula {asignacion.aula_id}",
+        "aula_completa": aula.nombre_completo if aula else None,
+        "curso_id": asignacion.curso_id,
+        "curso_nombre": curso.nombre if curso else None,
+        "tipo_cargo": asignacion.tipo_cargo.value if hasattr(asignacion.tipo_cargo, 'value') else str(asignacion.tipo_cargo),
+        "tipo_cargo_legible": tipo_legible.get(str(asignacion.tipo_cargo), str(asignacion.tipo_cargo)),
+        "puede_pasar_asistencia": str(asignacion.tipo_cargo) in ['docente_curso', 'auxiliar_grado'],
+        "grado": aula.grado if aula else None,
+        "anio_escolar": aula.anio_escolar if aula else None,
+        "nombre_completo_asignacion": f"{usuario.nombre_completo if usuario else '?'} → {curso.nombre if curso else 'General'} en {aula.nombre_corto if aula else '?'}",
+        "creado_en": asignacion.creado_en.isoformat() if asignacion.creado_en else None
+    }
+
+async def obtener_asignacion_por_id(db: AsyncSession, asignacion_id: int) -> Optional[dict]:
+    """Busca una asignación por ID"""
     resultado = await db.execute(
-        select(AsignacionAula)
-        .options(
-            selectinload(AsignacionAula.usuario),
-            selectinload(AsignacionAula.aula),
-            selectinload(AsignacionAula.curso)
-        )
-        .where(AsignacionAula.id == asignacion_id)
+        select(AsignacionAula).where(AsignacionAula.id == asignacion_id)
     )
-    return resultado.scalars().first()
+    asignacion = resultado.scalars().first()
+    
+    if not asignacion:
+        return None
+    
+    return await _enriquecer_asignacion(db, asignacion)
 
 async def obtener_asignaciones_por_usuario(
     db: AsyncSession, 
     usuario_id: int,
     tipo_cargo: Optional[str] = None,
     anio_escolar: Optional[int] = None
-) -> List[AsignacionAula]:
-    """
-    Obtiene todas las asignaciones de un usuario.
-    Este es el endpoint principal del dashboard del docente al iniciar sesión.
-    """
-    condiciones = [AsignacionAula.usuario_id == usuario_id]
+) -> List[dict]:
+    """Obtiene todas las asignaciones de un usuario."""
+    query = select(AsignacionAula).where(AsignacionAula.usuario_id == usuario_id)
     
     if tipo_cargo:
-        condiciones.append(AsignacionAula.tipo_cargo == tipo_cargo)
-    
-    query = select(AsignacionAula).options(
-        selectinload(AsignacionAula.usuario),
-        selectinload(AsignacionAula.aula),
-        selectinload(AsignacionAula.curso)
-    ).where(and_(*condiciones))
+        query = query.where(AsignacionAula.tipo_cargo == tipo_cargo)
     
     if anio_escolar:
-        query = query.join(Aula).where(Aula.anio_escolar == anio_escolar)
+        # Subconsulta para filtrar por año escolar sin join problemático
+        aulas_ids = await db.execute(
+            select(Aula.id).where(Aula.anio_escolar == anio_escolar)
+        )
+        ids = [a[0] for a in aulas_ids.all()]
+        if ids:
+            query = query.where(AsignacionAula.aula_id.in_(ids))
+        else:
+            return []
     
-    query = query.order_by(AsignacionAula.tipo_cargo, Aula.grado, Aula.seccion)
+    query = query.order_by(AsignacionAula.tipo_cargo)
     
     resultado = await db.execute(query)
-    return resultado.scalars().all()
+    asignaciones = resultado.scalars().all()
+    
+    # Enriquecer cada asignación
+    return [await _enriquecer_asignacion(db, a) for a in asignaciones]
 
-async def obtener_asignaciones_por_aula(
-    db: AsyncSession, 
-    aula_id: int
-) -> List[AsignacionAula]:
+async def obtener_asignaciones_por_aula(db: AsyncSession, aula_id: int) -> List[dict]:
     """Obtiene todas las asignaciones de un aula específica"""
     resultado = await db.execute(
         select(AsignacionAula)
-        .options(
-            selectinload(AsignacionAula.usuario),
-            selectinload(AsignacionAula.curso)
-        )
         .where(AsignacionAula.aula_id == aula_id)
         .order_by(AsignacionAula.tipo_cargo)
     )
-    return resultado.scalars().all()
+    asignaciones = resultado.scalars().all()
+    
+    return [await _enriquecer_asignacion(db, a) for a in asignaciones]
 
 async def obtener_todas_las_asignaciones(
     db: AsyncSession,
@@ -84,38 +110,37 @@ async def obtener_todas_las_asignaciones(
     limit: int = 100,
     anio_escolar: Optional[int] = None,
     tipo_cargo: Optional[str] = None
-) -> List[AsignacionAula]:
+) -> List[dict]:
     """Lista todas las asignaciones con filtros"""
-    query = select(AsignacionAula).options(
-        selectinload(AsignacionAula.usuario),
-        selectinload(AsignacionAula.aula),
-        selectinload(AsignacionAula.curso)
-    )
-    
-    if anio_escolar:
-        query = query.join(Aula).where(Aula.anio_escolar == anio_escolar)
+    query = select(AsignacionAula)
     
     if tipo_cargo:
         query = query.where(AsignacionAula.tipo_cargo == tipo_cargo)
     
-    query = query.order_by(
-        Aula.anio_escolar.desc(),
-        Aula.grado,
-        Aula.seccion,
-        AsignacionAula.tipo_cargo
-    ).offset(skip).limit(limit)
+    if anio_escolar:
+        # Filtrar por año escolar sin join
+        aulas_ids = await db.execute(
+            select(Aula.id).where(Aula.anio_escolar == anio_escolar)
+        )
+        ids = [a[0] for a in aulas_ids.all()]
+        if ids:
+            query = query.where(AsignacionAula.aula_id.in_(ids))
+        else:
+            return []
+    
+    query = query.offset(skip).limit(limit)
     
     resultado = await db.execute(query)
-    return resultado.scalars().all()
+    asignaciones = resultado.scalars().all()
+    
+    return [await _enriquecer_asignacion(db, a) for a in asignaciones]
 
 # ═══════════════════════════════════════════════════════════════
 # OPERACIONES CRUD
 # ═══════════════════════════════════════════════════════════════
 
-async def crear_asignacion(db: AsyncSession, data: AsignacionCreate) -> AsignacionAula:
-    """
-    Crea una nueva asignación con todas las validaciones de negocio.
-    """
+async def crear_asignacion(db: AsyncSession, data: AsignacionCreate) -> dict:
+    """Crea una nueva asignación con todas las validaciones de negocio."""
     
     # Validar que el usuario exista y tenga el rol correcto
     usuario = await db.get(Usuario, data.usuario_id)
@@ -139,23 +164,17 @@ async def crear_asignacion(db: AsyncSession, data: AsignacionCreate) -> Asignaci
         if not curso:
             raise HTTPException(status_code=404, detail=f"Curso ID {data.curso_id} no encontrado.")
         
-        # Validar rol del usuario
         if usuario.rol not in [RolUsuario.docente, RolUsuario.admin]:
             raise HTTPException(
                 status_code=400,
-                detail=f"El usuario {usuario.nombre_completo} es {usuario.rol.value}. "
-                        "Solo los docentes pueden dictar cursos."
+                detail=f"El usuario {usuario.nombre_completo} es {usuario.rol.value}. Solo los docentes pueden dictar cursos."
             )
     
     # Validar que un tutor sea docente
     if data.tipo_cargo == TipoResponsabilidad.TUTOR_SECCION:
         if usuario.rol not in [RolUsuario.docente, RolUsuario.admin]:
-            raise HTTPException(
-                status_code=400,
-                detail="Solo los docentes pueden ser tutores de sección."
-            )
+            raise HTTPException(status_code=400, detail="Solo los docentes pueden ser tutores de sección.")
         
-        # Verificar que no haya otro tutor en la misma aula
         tutor_existente = await db.execute(
             select(AsignacionAula).where(
                 and_(
@@ -173,12 +192,9 @@ async def crear_asignacion(db: AsyncSession, data: AsignacionCreate) -> Asignaci
     # Validar que un auxiliar sea auxiliar
     if data.tipo_cargo == TipoResponsabilidad.AUXILIAR_GRADO:
         if usuario.rol not in [RolUsuario.auxiliar, RolUsuario.admin]:
-            raise HTTPException(
-                status_code=400,
-                detail="Solo los auxiliares pueden ser asignados como auxiliar de grado."
-            )
+            raise HTTPException(status_code=400, detail="Solo los auxiliares pueden ser asignados como auxiliar de grado.")
     
-    # Verificar duplicado (misma aula, mismo curso, mismo tipo)
+    # Verificar duplicado
     if data.tipo_cargo == TipoResponsabilidad.DOCENTE_CURSO:
         existente = await db.execute(
             select(AsignacionAula).where(
@@ -203,13 +219,10 @@ async def crear_asignacion(db: AsyncSession, data: AsignacionCreate) -> Asignaci
     await db.commit()
     await db.refresh(nueva_asignacion)
     
-    return nueva_asignacion
+    return await _enriquecer_asignacion(db, nueva_asignacion)
 
 async def crear_asignacion_masiva(db: AsyncSession, data: AsignacionMasivaRequest) -> dict:
-    """
-    Asigna un docente a múltiples aulas para un mismo curso.
-    Ejemplo: Profesor de Matemática a 1°A, 1°B, 1°C, 2°A, 2°B
-    """
+    """Asigna un docente a múltiples aulas para un mismo curso."""
     asignaciones_creadas = []
     errores = []
     
@@ -222,14 +235,11 @@ async def crear_asignacion_masiva(db: AsyncSession, data: AsignacionMasivaReques
                 tipo_cargo=data.tipo_cargo
             ))
             asignaciones_creadas.append({
-                "id": asignacion.id,
-                "aula": asignacion.aula.nombre_corto if asignacion.aula else f"ID {aula_id}"
+                "id": asignacion["id"],
+                "aula": asignacion["aula_nombre"]
             })
         except HTTPException as e:
-            errores.append({
-                "aula_id": aula_id,
-                "error": e.detail
-            })
+            errores.append({"aula_id": aula_id, "error": e.detail})
     
     return {
         "usuario_id": data.usuario_id,
@@ -244,9 +254,12 @@ async def actualizar_asignacion(
     db: AsyncSession, 
     asignacion_id: int, 
     data: AsignacionUpdate
-) -> Optional[AsignacionAula]:
+) -> Optional[dict]:
     """Actualiza los datos de una asignación existente"""
-    asignacion = await obtener_asignacion_por_id(db, asignacion_id)
+    resultado = await db.execute(
+        select(AsignacionAula).where(AsignacionAula.id == asignacion_id)
+    )
+    asignacion = resultado.scalars().first()
     
     if not asignacion:
         return None
@@ -259,11 +272,15 @@ async def actualizar_asignacion(
     
     await db.commit()
     await db.refresh(asignacion)
-    return asignacion
+    
+    return await _enriquecer_asignacion(db, asignacion)
 
 async def eliminar_asignacion(db: AsyncSession, asignacion_id: int) -> bool:
     """Elimina una asignación"""
-    asignacion = await obtener_asignacion_por_id(db, asignacion_id)
+    resultado = await db.execute(
+        select(AsignacionAula).where(AsignacionAula.id == asignacion_id)
+    )
+    asignacion = resultado.scalars().first()
     
     if not asignacion:
         return False
@@ -277,19 +294,16 @@ async def eliminar_asignacion(db: AsyncSession, asignacion_id: int) -> bool:
 # ═══════════════════════════════════════════════════════════════
 
 async def obtener_dashboard_docente(db: AsyncSession, usuario_id: int) -> dict:
-    """
-    Obtiene el dashboard completo de un docente al iniciar sesión.
-    Organiza sus asignaciones en: docente_curso, tutor_seccion, auxiliar_grado
-    """
+    """Obtiene el dashboard completo de un docente al iniciar sesión."""
     usuario = await db.get(Usuario, usuario_id)
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
     
     asignaciones = await obtener_asignaciones_por_usuario(db, usuario_id)
     
-    docente = [a.to_card_response() for a in asignaciones if a.es_docente]
-    tutor = [a.to_card_response() for a in asignaciones if a.es_tutor]
-    auxiliar = [a.to_card_response() for a in asignaciones if a.es_auxiliar]
+    docente = [a for a in asignaciones if a["tipo_cargo"] == "docente_curso"]
+    tutor = [a for a in asignaciones if a["tipo_cargo"] == "tutor_seccion"]
+    auxiliar = [a for a in asignaciones if a["tipo_cargo"] == "auxiliar_grado"]
     
     return {
         "usuario_id": usuario_id,
@@ -309,9 +323,9 @@ async def obtener_resumen_aula(db: AsyncSession, aula_id: int) -> dict:
     
     asignaciones = await obtener_asignaciones_por_aula(db, aula_id)
     
-    docentes = [a.to_card_response() for a in asignaciones if a.es_docente]
-    tutor = next((a.to_card_response() for a in asignaciones if a.es_tutor), None)
-    auxiliar = next((a.to_card_response() for a in asignaciones if a.es_auxiliar), None)
+    docentes = [a for a in asignaciones if a["tipo_cargo"] == "docente_curso"]
+    tutor = next((a for a in asignaciones if a["tipo_cargo"] == "tutor_seccion"), None)
+    auxiliar = next((a for a in asignaciones if a["tipo_cargo"] == "auxiliar_grado"), None)
     
     return {
         "aula_id": aula_id,
