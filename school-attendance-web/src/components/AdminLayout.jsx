@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// ICONOS BLINDADOS: Tienen tamaño exacto e inmutable en línea (20px x 20px)
+// ═══════════════════════════════════════════════════════════════
+// ICONOS SVG
+// ═══════════════════════════════════════════════════════════════
 const HomeIcon = () => (
   <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
@@ -27,6 +29,12 @@ const UsersIcon = () => (
   </svg>
 );
 
+const LinkIcon = () => (
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+  </svg>
+);
+
 const BuildingIcon = () => (
   <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
@@ -36,6 +44,12 @@ const BuildingIcon = () => (
 const BellIcon = () => (
   <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+  </svg>
+);
+
+const DocumentIcon = () => (
+  <svg style={{ width: '20px', height: '20px', minWidth: '20px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
   </svg>
 );
 
@@ -57,6 +71,9 @@ const CloseIcon = () => (
   </svg>
 );
 
+// ═══════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ═══════════════════════════════════════════════════════════════
 const AdminLayout = () => {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,13 +83,14 @@ const AdminLayout = () => {
     { name: 'Alumnos', to: '/admin/alumnos', icon: AcademicIcon },
     { name: 'Apoderados', to: '/admin/apoderados', icon: UserGroupIcon },
     { name: 'Usuarios', to: '/admin/usuarios', icon: UsersIcon },
+    { name: 'Asignar Cargos', to: '/admin/asignaciones', icon: LinkIcon },
     { name: 'Aulas', to: '/admin/aulas', icon: BuildingIcon },
     { name: 'Alertas', to: '/admin/alertas', icon: BellIcon },
+    { name: 'Justificaciones', to: '/admin/justificaciones', icon: DocumentIcon },
   ];
 
   return (
     <div className="admin-layout-root">
-      {/* CSS Inyectado para control total e inmune a Tailwind */}
       <style>{`
         .admin-layout-root {
           display: flex;
@@ -80,15 +98,11 @@ const AdminLayout = () => {
           background-color: #f8fafc !important;
           font-family: 'Inter', -apple-system, sans-serif;
         }
-
-        /* Asegurar absolutamente que ningún SVG en el Layout crezca de más */
         .admin-layout-root svg {
           display: inline-block !important;
           vertical-align: middle !important;
           flex-shrink: 0 !important;
         }
-
-        /* Sidebar Escritorio */
         .layout-sidebar {
           width: 260px !important;
           background-color: #ffffff !important;
@@ -102,12 +116,10 @@ const AdminLayout = () => {
           flex-direction: column !important;
           box-shadow: 4px 0 24px rgba(15, 23, 42, 0.015) !important;
         }
-
         .sidebar-brand-box {
           padding: 24px !important;
           border-bottom: 1px solid #f1f5f9 !important;
         }
-
         .brand-title {
           font-size: 20px !important;
           font-weight: 800 !important;
@@ -115,16 +127,11 @@ const AdminLayout = () => {
           margin: 0 !important;
           letter-spacing: -0.5px;
         }
-
         .brand-subtitle {
           font-size: 12px !important;
           color: #64748b !important;
           margin: 4px 0 0 0 !important;
-          white-space: nowrap !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
         }
-
         .sidebar-nav {
           flex: 1 !important;
           padding: 20px 16px !important;
@@ -133,8 +140,6 @@ const AdminLayout = () => {
           gap: 6px !important;
           overflow-y: auto !important;
         }
-
-        /* Enlaces de navegación */
         .nav-item-link {
           display: flex !important;
           align-items: center !important;
@@ -147,22 +152,18 @@ const AdminLayout = () => {
           border-radius: 12px !important;
           transition: all 0.2s ease !important;
         }
-
         .nav-item-link:hover {
           background-color: #f1f5f9 !important;
           color: #0f172a !important;
         }
-
         .nav-item-link.active {
           background-color: #eef2ff !important;
           color: #4f46e5 !important;
         }
-
         .sidebar-footer {
           padding: 16px !important;
           border-top: 1px solid #f1f5f9 !important;
         }
-
         .btn-logout {
           display: flex !important;
           align-items: center !important;
@@ -179,21 +180,16 @@ const AdminLayout = () => {
           border-radius: 12px !important;
           transition: all 0.2s ease !important;
         }
-
         .btn-logout:hover {
           background-color: #fef2f2 !important;
         }
-
-        /* Contenido Principal */
         .layout-main-area {
-          flex-1: 1 1 0% !important;
+          flex: 1 1 0% !important;
           margin-left: 260px !important;
           display: flex !important;
           flex-direction: column !important;
           min-width: 0 !important;
         }
-
-        /* Cabecera Móvil */
         .mobile-header {
           display: none !important;
           background-color: #ffffff !important;
@@ -205,7 +201,6 @@ const AdminLayout = () => {
           top: 0 !important;
           z-index: 40 !important;
         }
-
         .btn-menu-toggle {
           background: none !important;
           border: none !important;
@@ -215,15 +210,12 @@ const AdminLayout = () => {
           display: flex !important;
           align-items: center !important;
         }
-
         .mobile-brand-title {
           font-size: 18px !important;
           font-weight: 800 !important;
           color: #4f46e5 !important;
           margin: 0 !important;
         }
-
-        /* Menú Lateral Móvil con Overlay */
         .mobile-overlay {
           position: fixed !important;
           inset: 0 !important;
@@ -232,7 +224,6 @@ const AdminLayout = () => {
           z-index: 100 !important;
           display: flex !important;
         }
-
         .mobile-sidebar {
           width: 280px !important;
           background-color: #ffffff !important;
@@ -242,7 +233,6 @@ const AdminLayout = () => {
           flex-direction: column !important;
           box-shadow: 4px 0 24px rgba(0,0,0,0.1) !important;
         }
-
         .btn-close-menu {
           background: none !important;
           border: none !important;
@@ -253,22 +243,14 @@ const AdminLayout = () => {
           margin-bottom: 24px !important;
           display: flex !important;
         }
-
-        /* Media Queries Responsivas */
         @media (max-width: 768px) {
-          .layout-sidebar {
-            display: none !important;
-          }
-          .layout-main-area {
-            margin-left: 0 !important;
-          }
-          .mobile-header {
-            display: flex !important;
-          }
+          .layout-sidebar { display: none !important; }
+          .layout-main-area { margin-left: 0 !important; }
+          .mobile-header { display: flex !important; }
         }
       `}</style>
 
-      {/* 1. SIDEBAR ESCRITORIO */}
+      {/* SIDEBAR ESCRITORIO */}
       <aside className="layout-sidebar">
         <div className="sidebar-brand-box">
           <h2 className="brand-title">Admin Panel</h2>
@@ -295,7 +277,7 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* 2. SIDEBAR MÓVIL (OVERLAY) */}
+      {/* SIDEBAR MÓVIL */}
       {sidebarOpen && (
         <div className="mobile-overlay" onClick={() => setSidebarOpen(false)}>
           <aside className="mobile-sidebar" onClick={(e) => e.stopPropagation()}>
@@ -326,18 +308,16 @@ const AdminLayout = () => {
         </div>
       )}
 
-      {/* 3. AREA DE CONTENIDO PRINCIPAL */}
+      {/* CONTENIDO PRINCIPAL */}
       <div className="layout-main-area">
-        {/* Header para móviles */}
         <header className="mobile-header">
           <button className="btn-menu-toggle" onClick={() => setSidebarOpen(true)}>
             <BarsIcon />
           </button>
           <h1 className="mobile-brand-title">Admin</h1>
-          <div style={{ width: '24px' }} /> {/* Espacio para balancear el título */}
+          <div style={{ width: '24px' }} />
         </header>
 
-        {/* Vistas Hijas (como el DashboardAdmin) */}
         <main style={{ padding: '24px', boxSizing: 'border-box' }}>
           <Outlet />
         </main>

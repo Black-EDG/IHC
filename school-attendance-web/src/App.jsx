@@ -12,6 +12,8 @@ import MatriculaApoderado from './pages/admin/MatriculaApoderado';
 import GestionUsuarios from './pages/admin/GestionUsuarios';
 import GestionAulas from './pages/admin/GestionAulas';
 import ControlAlertas from './pages/admin/ControlAlertas';
+import JustificacionesAdmin from './pages/admin/JustificacionesAdmin';
+import AsignacionCargos from './pages/admin/AsignacionCargos';
 
 function App() {
   return (
@@ -20,7 +22,7 @@ function App() {
         {/* Ruta pública del Login */}
         <Route path="/" element={<Login />} />
 
-        {/* Panel de Administración con layout compartido y protección de rol */}
+        {/* Panel de Administración */}
         <Route
           path="/admin"
           element={
@@ -29,20 +31,18 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* Si entran exactamente a "/admin", los redirige automáticamente a "/admin/dashboard" */}
           <Route index element={<Navigate to="dashboard" replace />} />
-
-          {/* Esta ruta procesará el path "/admin/dashboard" que envía tu AuthContext */}
           <Route path="dashboard" element={<DashboardAdmin />} />
-          
           <Route path="alumnos" element={<MatriculaAlumno />} />
           <Route path="apoderados" element={<MatriculaApoderado />} />
           <Route path="usuarios" element={<GestionUsuarios />} />
           <Route path="aulas" element={<GestionAulas />} />
+          <Route path="asignaciones" element={<AsignacionCargos />} />
           <Route path="alertas" element={<ControlAlertas />} />
+          <Route path="justificaciones" element={<JustificacionesAdmin />} />
         </Route>
 
-        {/* Fallback: cualquier ruta no existente vuelve al login */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

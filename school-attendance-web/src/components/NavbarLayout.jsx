@@ -7,7 +7,7 @@ const NavbarLayout = ({ children }) => {
   const rol = localStorage.getItem('rol') || 'docente';
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const location = useLocation(); // Permite detectar la ruta activa de forma reactiva
+  const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => {
@@ -23,9 +23,11 @@ const NavbarLayout = ({ children }) => {
     window.location.href = '/';
   };
 
+  // Verificar si una ruta está activa
+  const isActive = (path) => location.pathname === path;
+
   return (
     <div className="intranet-layout-root">
-      {/* CSS Inyectado para control absoluto y consistencia visual */}
       <style>{`
         .intranet-layout-root {
           min-height: 100vh;
@@ -35,7 +37,6 @@ const NavbarLayout = ({ children }) => {
           flex-direction: column;
         }
 
-        /* HEADER SUPERIOR */
         .intranet-header {
           background-color: ${theme?.colors?.primary || '#1e3a8a'} !important;
           color: #ffffff !important;
@@ -64,11 +65,6 @@ const NavbarLayout = ({ children }) => {
           padding: 4px !important;
           display: flex !important;
           align-items: center;
-          transition: transform 0.2s ease !important;
-        }
-
-        .btn-hamburger:active {
-          transform: scale(0.9) !important;
         }
 
         .brand-logo-text {
@@ -110,15 +106,12 @@ const NavbarLayout = ({ children }) => {
           font-weight: 700 !important;
           cursor: pointer !important;
           transition: all 0.2s ease !important;
-          box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2) !important;
         }
 
         .btn-logout-action:hover {
           background-color: #dc2626 !important;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
         }
 
-        /* MENÚ DE NAVEGACIÓN MÓVIL */
         .mobile-nav-menu {
           background-color: #0f172a !important;
           padding: 12px !important;
@@ -149,22 +142,20 @@ const NavbarLayout = ({ children }) => {
           color: #ffffff !important;
         }
 
-        /* CONTENEDOR DE DISTRIBUCIÓN (BARRA LATERAL + MAIN) */
         .layout-body-wrapper {
           display: flex !important;
           flex: 1 !important;
         }
 
-        /* BARRA LATERAL (ESCRITORIO) */
         .desktop-sidebar {
-          width: 250px !important;
-          background-color: #0f172a !important; /* Azul pizarra oscuro elegante */
+          width: 260px !important;
+          background-color: #0f172a !important;
           min-height: calc(100vh - 62px) !important;
           padding: 24px 16px !important;
           box-sizing: border-box !important;
           display: flex !important;
           flex-direction: column !important;
-          gap: 6px !important;
+          gap: 4px !important;
           border-right: 1px solid #1e293b !important;
         }
 
@@ -173,8 +164,8 @@ const NavbarLayout = ({ children }) => {
           font-size: 11px !important;
           font-weight: 800 !important;
           padding: 0 12px !important;
-          margin-top: 14px !important;
-          margin-bottom: 6px !important;
+          margin-top: 16px !important;
+          margin-bottom: 8px !important;
           text-transform: uppercase !important;
           letter-spacing: 0.75px !important;
         }
@@ -182,14 +173,14 @@ const NavbarLayout = ({ children }) => {
         .sidebar-link {
           color: #94a3b8 !important;
           text-decoration: none !important;
-          padding: 12px 14px !important;
+          padding: 11px 14px !important;
           border-radius: 10px !important;
           display: flex !important;
           align-items: center !important;
           gap: 10px !important;
-          font-size: 14px !important;
+          font-size: 13px !important;
           font-weight: 600 !important;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          transition: all 0.2s ease !important;
         }
 
         .sidebar-link:hover {
@@ -198,40 +189,28 @@ const NavbarLayout = ({ children }) => {
         }
 
         .sidebar-link.active {
-          background-color: #1e3a8a !important; /* Color primario suave */
+          background-color: #1e3a8a !important;
           color: #ffffff !important;
           box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15) !important;
         }
 
-        /* ÁREA PRINCIPAL */
         .main-content-viewport {
           flex: 1 !important;
           box-sizing: border-box !important;
           overflow-x: hidden !important;
-          transition: padding 0.25s ease !important;
         }
 
         @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
-      {/* 1. HEADER SUPERIOR */}
+      {/* HEADER */}
       <header className="intranet-header">
         <div className="header-brand-group">
           {isMobile && (
-            <button 
-              onClick={() => setMenuAbierto(!menuAbierto)}
-              className="btn-hamburger"
-              aria-label="Abrir menú"
-            >
+            <button onClick={() => setMenuAbierto(!menuAbierto)} className="btn-hamburger" aria-label="Abrir menú">
               ☰
             </button>
           )}
@@ -245,81 +224,73 @@ const NavbarLayout = ({ children }) => {
               <div className="user-badge-role">{rol}</div>
             </div>
           )}
-          <button onClick={cerrarSesion} className="btn-logout-action">
-            Salir
-          </button>
+          <button onClick={cerrarSesion} className="btn-logout-action">Salir</button>
         </div>
       </header>
 
-      {/* 2. MENÚ MÓVIL DESPLEGABLE */}
+      {/* MENÚ MÓVIL */}
       {isMobile && menuAbierto && (
         <nav className="mobile-nav-menu">
           {rol === 'admin' && (
             <>
-              <Link 
-                to="/admin/alumnos" 
-                onClick={() => setMenuAbierto(false)}
-                className={`mobile-nav-link ${location.pathname === '/admin/alumnos' ? 'active' : ''}`}
-              >
-                📝 Matrícula Alumnos
-              </Link>
-              <Link 
-                to="/admin/apoderados" 
-                onClick={() => setMenuAbierto(false)}
-                className={`mobile-nav-link ${location.pathname === '/admin/apoderados' ? 'active' : ''}`}
-              >
-                👨‍👩‍👦 Registrar Apoderados
-              </Link>
+              <Link to="/admin/usuarios" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/admin/usuarios') ? 'active' : ''}`}>👥 Gestión Usuarios</Link>
+              <Link to="/admin/alumnos" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/admin/alumnos') ? 'active' : ''}`}>📝 Matrícula Alumnos</Link>
+              <Link to="/admin/apoderados" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/admin/apoderados') ? 'active' : ''}`}>👨‍👩‍👦 Apoderados</Link>
+              <Link to="/admin/asignaciones" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/admin/asignaciones') ? 'active' : ''}`}>🔗 Asignaciones</Link>
+              <Link to="/admin/aulas" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/admin/aulas') ? 'active' : ''}`}>🏫 Aulas</Link>
+              <Link to="/admin/cursos" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/admin/cursos') ? 'active' : ''}`}>📚 Cursos</Link>
             </>
           )}
-          <Link 
-            to="/asistencia" 
-            onClick={() => setMenuAbierto(false)}
-            className={`mobile-nav-link ${location.pathname === '/asistencia' ? 'active' : ''}`}
-          >
-            ✅ Tomar Asistencia
-          </Link>
+          <Link to="/asistencia" onClick={() => setMenuAbierto(false)} className={`mobile-nav-link ${isActive('/asistencia') ? 'active' : ''}`}>✅ Asistencia</Link>
         </nav>
       )}
 
-      {/* 3. DISTRIBUCIÓN DEL CUERPO */}
+      {/* CUERPO */}
       <div className="layout-body-wrapper">
-        {/* Barra lateral escritorio */}
+        {/* SIDEBAR ESCRITORIO */}
         {!isMobile && (
           <aside className="desktop-sidebar">
             {rol === 'admin' && (
               <>
-                <div className="sidebar-section-title">Administración</div>
-                <Link 
-                  to="/admin/alumnos" 
-                  className={`sidebar-link ${location.pathname === '/admin/alumnos' ? 'active' : ''}`}
-                >
+                <div className="sidebar-section-title">👑 Administración</div>
+                <Link to="/admin/usuarios" className={`sidebar-link ${isActive('/admin/usuarios') ? 'active' : ''}`}>
+                  <span>👥</span> Gestión de Usuarios
+                </Link>
+                <Link to="/admin/alumnos" className={`sidebar-link ${isActive('/admin/alumnos') ? 'active' : ''}`}>
                   <span>📝</span> Matrícula de Alumnos
                 </Link>
-                <Link 
-                  to="/admin/apoderados" 
-                  className={`sidebar-link ${location.pathname === '/admin/apoderados' ? 'active' : ''}`}
-                >
+                <Link to="/admin/apoderados" className={`sidebar-link ${isActive('/admin/apoderados') ? 'active' : ''}`}>
                   <span>👨‍👩‍👦</span> Registro Apoderados
                 </Link>
-                <div style={{ height: '8px' }}></div>
+                <Link to="/admin/asignaciones" className={`sidebar-link ${isActive('/admin/asignaciones') ? 'active' : ''}`}>
+                  <span>🔗</span> Asignar Cargos
+                </Link>
               </>
             )}
-            <div className="sidebar-section-title">Operaciones</div>
-            <Link 
-              to="/asistencia" 
-              className={`sidebar-link ${location.pathname === '/asistencia' ? 'active' : ''}`}
-            >
+
+            <div className="sidebar-section-title">🏫 Académico</div>
+            <Link to="/admin/aulas" className={`sidebar-link ${isActive('/admin/aulas') ? 'active' : ''}`}>
+              <span>🏫</span> Aulas y Secciones
+            </Link>
+            <Link to="/admin/cursos" className={`sidebar-link ${isActive('/admin/cursos') ? 'active' : ''}`}>
+              <span>📚</span> Cursos
+            </Link>
+
+            <div className="sidebar-section-title">✅ Operaciones</div>
+            <Link to="/asistencia" className={`sidebar-link ${isActive('/asistencia') ? 'active' : ''}`}>
               <span>✅</span> Tomar Asistencia
+            </Link>
+            <Link to="/justificaciones" className={`sidebar-link ${isActive('/justificaciones') ? 'active' : ''}`}>
+              <span>📝</span> Justificaciones
+            </Link>
+            <Link to="/alertas" className={`sidebar-link ${isActive('/alertas') ? 'active' : ''}`}>
+              <span>🔔</span> Alertas
             </Link>
           </aside>
         )}
 
-        {/* Viewport para inyectar las páginas hijas */}
-        <main 
-          className="main-content-viewport"
-          style={{ padding: isMobile ? '20px 16px' : '32px' }}
-        >
+        {/* CONTENIDO PRINCIPAL */}
+        <main className="main-content-viewport" style={{ padding: isMobile ? '20px 16px' : '32px' }}>
           {children}
         </main>
       </div>
